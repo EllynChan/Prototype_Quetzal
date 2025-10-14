@@ -49,6 +49,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	FVector2D CurrMoveInput;
+
 public:
 
 	/** Constructor */
@@ -84,6 +86,9 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	bool IsMoving() const { return GetPendingMovementInputVector().IsNearlyZero(); }
 
 public:
 

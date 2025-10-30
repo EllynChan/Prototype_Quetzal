@@ -71,7 +71,7 @@ protected:
 
 	/** Max amount of HP the character will have on respawn */
 	UPROPERTY(EditAnywhere, Category="Damage", meta = (ClampMin = 0, ClampMax = 100))
-	float MaxHP = 5.0f;
+	float MaxHP = 500.0f;
 
 	/** Current amount of HP the character has */
 	UPROPERTY(VisibleAnywhere, Category="Damage")

@@ -361,7 +361,7 @@ void ACombatCharacter::HandleDeath()
 	LifeBar->SetHiddenInGame(true);
 
 	// pull back the camera
-	GetCameraBoom()->TargetArmLength = DeathCameraDistance;
+	// GetCameraBoom()->TargetArmLength = DeathCameraDistance;
 
 	// schedule respawning
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ACombatCharacter::RespawnCharacter, RespawnTime, false);

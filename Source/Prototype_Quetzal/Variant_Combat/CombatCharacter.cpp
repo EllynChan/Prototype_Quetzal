@@ -24,10 +24,10 @@ ACombatCharacter::ACombatCharacter()
 	OnAttackMontageEnded.BindUObject(this, &ACombatCharacter::AttackMontageEnded);
 
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
+	GetCapsuleComponent()->InitCapsuleSize(50.0f, 90.0f);
 
 	// Configure character movement
-	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 
 	// create the camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -361,7 +361,7 @@ void ACombatCharacter::HandleDeath()
 	LifeBar->SetHiddenInGame(true);
 
 	// pull back the camera
-	GetCameraBoom()->TargetArmLength = DeathCameraDistance;
+	// GetCameraBoom()->TargetArmLength = DeathCameraDistance;
 
 	// schedule respawning
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ACombatCharacter::RespawnCharacter, RespawnTime, false);
@@ -401,8 +401,8 @@ float ACombatCharacter::TakeDamage(float Damage, struct FDamageEvent const& Dama
 		LifeBarWidget->SetLifePercentage(CurrentHP / MaxHP);
 
 		// enable partial ragdoll physics, but keep the pelvis vertical
-		GetMesh()->SetPhysicsBlendWeight(0.5f);
-		GetMesh()->SetBodySimulatePhysics(PelvisBoneName, false);
+		// GetMesh()->SetPhysicsBlendWeight(0.5f);
+		// GetMesh()->SetBodySimulatePhysics(PelvisBoneName, false);
 	}
 
 	// return the received damage amount

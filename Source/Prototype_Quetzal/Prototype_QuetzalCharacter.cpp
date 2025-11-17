@@ -87,7 +87,7 @@ void APrototype_QuetzalCharacter::Look(const FInputActionValue& Value)
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	// route the input
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
+	DoLook(0.5*LookAxisVector.X, 0.5*LookAxisVector.Y);
 }
 
 void APrototype_QuetzalCharacter::DoMove(float Right, float Forward)

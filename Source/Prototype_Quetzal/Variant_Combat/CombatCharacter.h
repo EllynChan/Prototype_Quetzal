@@ -71,7 +71,7 @@ protected:
 
 	/** Max amount of HP the character will have on respawn */
 	UPROPERTY(EditAnywhere, Category="Damage", meta = (ClampMin = 0, ClampMax = 100))
-	float MaxHP = 5.0f;
+	float MaxHP = 100.0f;
 
 	/** Current amount of HP the character has */
 	UPROPERTY(VisibleAnywhere, Category="Damage")
@@ -256,6 +256,7 @@ public:
 	/** Handles damage and knockback events */
 	virtual void ApplyDamage(float Damage, AActor* DamageCauser, const FVector& DamageLocation, const FVector& DamageImpulse) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	/** Handles death events */
 	virtual void HandleDeath() override;
 
@@ -306,4 +307,10 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintPure, Category = "Custom")
+	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
+
+	UFUNCTION(BlueprintPure, Category = "Custom")
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 };

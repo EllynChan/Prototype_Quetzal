@@ -7,6 +7,7 @@
 #include "CombatAttacker.h"
 #include "CombatDamageable.h"
 #include "Animation/AnimInstance.h"
+#include "MyCharacter.h"
 #include "CombatCharacter.generated.h"
 
 class USpringArmComponent;
@@ -27,7 +28,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogCombatCharacter, Log, All);
  *  - Respawning
  */
 UCLASS(abstract)
-class ACombatCharacter : public ACharacter, public ICombatAttacker, public ICombatDamageable
+class ACombatCharacter : public AMyCharacter, public ICombatAttacker, public ICombatDamageable
 {
 	GENERATED_BODY()
 
@@ -44,50 +45,25 @@ class ACombatCharacter : public ACharacter, public ICombatAttacker, public IComb
 	UWidgetComponent* LifeBar;
 	
 protected:
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* LookAction;
-
-	/** Mouse Look Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* MouseLookAction;
-
 	/** Combo Attack Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* ComboAttackAction;
 
 	/** Charged Attack Input Action */
 	UPROPERTY(EditAnywhere, Category ="Input")
 	UInputAction* ChargedAttackAction;
 
-	/** Max amount of HP the character will have on respawn */
-	UPROPERTY(EditAnywhere, Category="Damage", meta = (ClampMin = 0, ClampMax = 100))
-	float MaxHP = 100.0f;
+	///** Life bar widget fill color */
+	//UPROPERTY(EditAnywhere, Category="Damage")
+	//FLinearColor LifeBarColor;
 
-	/** Current amount of HP the character has */
-	UPROPERTY(VisibleAnywhere, Category="Damage")
-	float CurrentHP = 0.0f;
+	///** Name of the pelvis bone, for damage ragdoll physics */
+	//UPROPERTY(EditAnywhere, Category="Damage")
+	//FName PelvisBoneName;
 
-	/** Life bar widget fill color */
-	UPROPERTY(EditAnywhere, Category="Damage")
-	FLinearColor LifeBarColor;
-
-	/** Name of the pelvis bone, for damage ragdoll physics */
-	UPROPERTY(EditAnywhere, Category="Damage")
-	FName PelvisBoneName;
-
-	/** Pointer to the life bar widget */
-	UPROPERTY(EditAnywhere, Category="Damage")
-	TObjectPtr<UCombatLifeBar> LifeBarWidget;
+	///** Pointer to the life bar widget */
+	//UPROPERTY(EditAnywhere, Category="Damage")
+	//TObjectPtr<UCombatLifeBar> LifeBarWidget;
 
 	/** Max amount of time that may elapse for a non-combo attack input to not be considered stale */
 	UPROPERTY(EditAnywhere, Category="Melee Attack", meta = (ClampMin = 0, ClampMax = 5, Units = "s"))
@@ -160,31 +136,22 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Camera", meta = (ClampMin = 0, ClampMax = 1000, Units = "cm"))
 	float DefaultCameraDistance = 100.0f;
 
-	/** Time to wait before respawning the character */
-	UPROPERTY(EditAnywhere, Category="Respawn", meta = (ClampMin = 0, ClampMax = 10, Units = "s"))
-	float RespawnTime = 3.0f;
-
 	/** Attack montage ended delegate */
 	FOnMontageEnded OnAttackMontageEnded;
 
-	/** Character respawn timer */
-	FTimerHandle RespawnTimer;
-
-	/** Copy of the mesh's transform so we can reset it after ragdoll animations */
-	FTransform MeshStartingTransform;
 
 public:
 	
 	/** Constructor */
 	ACombatCharacter();
 
+	/** Handles death events */
+	virtual void HandleDeath() override;
+
+	/** Handles healing events */
+	virtual void ApplyHealing(float Healing, AActor* Healer) override;
+
 protected:
-
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
 
 	/** Called for combo attack input */
 	void ComboAttackPressed();
@@ -196,14 +163,6 @@ protected:
 	void ChargedAttackReleased();
 
 public:
-
-	/** Handles move inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoMove(float Right, float Forward);
-
-	/** Handles look inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoLook(float Yaw, float Pitch);
 
 	/** Handles combo attack pressed from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
@@ -222,9 +181,6 @@ public:
 	virtual void DoChargedAttackEnd();
 
 protected:
-
-	/** Resets the character's current HP to maximum */
-	void ResetHP();
 
 	/** Performs a combo attack */
 	void ComboAttack();
@@ -256,25 +212,10 @@ public:
 	/** Handles damage and knockback events */
 	virtual void ApplyDamage(float Damage, AActor* DamageCauser, const FVector& DamageLocation, const FVector& DamageImpulse) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Custom")
-	/** Handles death events */
-	virtual void HandleDeath() override;
-
-	/** Handles healing events */
-	virtual void ApplyHealing(float Healing, AActor* Healer) override;
-
-	// ~end CombatDamageable interface
-
-	/** Called from the respawn timer to destroy and re-create the character */
-	void RespawnCharacter();
-
 public:
 
 	/** Overrides the default TakeDamage functionality */
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	/** Overrides landing to reset damage ragdoll physics */
-	virtual void Landed(const FHitResult& Hit) override;
 
 protected:
 

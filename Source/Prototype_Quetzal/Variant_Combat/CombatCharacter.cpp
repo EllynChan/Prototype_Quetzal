@@ -26,8 +26,7 @@ ACombatCharacter::ACombatCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(50.0f, 90.0f);
 
-	// Configure character movement
-	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	bUseControllerRotationYaw = true;
 
 	// create the camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -44,28 +43,11 @@ ACombatCharacter::ACombatCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	// create the life bar widget component
-	LifeBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("LifeBar"));
-	LifeBar->SetupAttachment(RootComponent);
+	/*LifeBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("LifeBar"));
+	LifeBar->SetupAttachment(RootComponent);*/
 
 	// set the player tag
 	Tags.Add(FName("Player"));
-}
-
-void ACombatCharacter::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
-}
-
-void ACombatCharacter::Look(const FInputActionValue& Value)
-{
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	// route the input
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
 void ACombatCharacter::ComboAttackPressed()
@@ -84,36 +66,6 @@ void ACombatCharacter::ChargedAttackReleased()
 {
 	// route the input
 	DoChargedAttackEnd();
-}
-
-void ACombatCharacter::DoMove(float Right, float Forward)
-{
-	if (GetController() != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = GetController()->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, Forward);
-		AddMovementInput(RightDirection, Right);
-	}
-}
-
-void ACombatCharacter::DoLook(float Yaw, float Pitch)
-{
-	if (GetController() != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
 }
 
 void ACombatCharacter::DoComboAttackStart()
@@ -164,14 +116,14 @@ void ACombatCharacter::DoChargedAttackEnd()
 	}
 }
 
-void ACombatCharacter::ResetHP()
-{
-	// reset the current HP total
-	CurrentHP = MaxHP;
-
-	// update the life bar
-	LifeBarWidget->SetLifePercentage(1.0f);
-}
+//void ACombatCharacter::ResetHP()
+//{
+//	// reset the current HP total
+//	CurrentHP = MaxHP;
+//
+//	// update the life bar
+//	// LifeBarWidget->SetLifePercentage(1.0f);
+//}
 
 void ACombatCharacter::ComboAttack()
 {
@@ -351,31 +303,25 @@ void ACombatCharacter::ApplyDamage(float Damage, AActor* DamageCauser, const FVe
 
 void ACombatCharacter::HandleDeath()
 {
-	// disable movement while we're dead
-	GetCharacterMovement()->DisableMovement();
+	//// disable movement while we're dead
+	//GetCharacterMovement()->DisableMovement();
 
-	// enable full ragdoll physics
-	GetMesh()->SetSimulatePhysics(true);
+	//// enable full ragdoll physics
+	//GetMesh()->SetSimulatePhysics(true);
 
-	// hide the life bar
-	LifeBar->SetHiddenInGame(true);
+	//// hide the life bar
+	//LifeBar->SetHiddenInGame(true);
 
-	// pull back the camera
-	// GetCameraBoom()->TargetArmLength = DeathCameraDistance;
+	//// pull back the camera
+	//// GetCameraBoom()->TargetArmLength = DeathCameraDistance;
 
-	// schedule respawning
-	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ACombatCharacter::RespawnCharacter, RespawnTime, false);
+	//// schedule respawning
+	//GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ACombatCharacter::RespawnCharacter, RespawnTime, false);
 }
 
 void ACombatCharacter::ApplyHealing(float Healing, AActor* Healer)
 {
 	// stub
-}
-
-void ACombatCharacter::RespawnCharacter()
-{
-	// destroy the character and let it be respawned by the Player Controller
-	Destroy();
 }
 
 float ACombatCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -397,49 +343,31 @@ float ACombatCharacter::TakeDamage(float Damage, struct FDamageEvent const& Dama
 	}
 	else
 	{
-		// update the life bar
-		LifeBarWidget->SetLifePercentage(CurrentHP / MaxHP);
-
-		// enable partial ragdoll physics, but keep the pelvis vertical
-		// GetMesh()->SetPhysicsBlendWeight(0.5f);
-		// GetMesh()->SetBodySimulatePhysics(PelvisBoneName, false);
+		// apply camera shake
 	}
 
 	// return the received damage amount
 	return Damage;
 }
 
-void ACombatCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-
-	// is the character still alive?
-	if (CurrentHP >= 0.0f)
-	{
-		// disable ragdoll physics
-		GetMesh()->SetPhysicsBlendWeight(0.0f);
-	}
-}
+//void ACombatCharacter::Landed(const FHitResult& Hit)
+//{
+//	Super::Landed(Hit);
+//
+//	// is the character still alive?
+//	if (CurrentHP >= 0.0f)
+//	{
+//		// disable ragdoll physics
+//		GetMesh()->SetPhysicsBlendWeight(0.0f);
+//	}
+//}
 
 void ACombatCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// get the life bar from the widget component
-	LifeBarWidget = Cast<UCombatLifeBar>(LifeBar->GetUserWidgetObject());
-	check(LifeBarWidget);
-
 	// initialize the camera
 	GetCameraBoom()->TargetArmLength = DefaultCameraDistance;
-
-	// save the relative transform for the mesh so we can reset the ragdoll later
-	MeshStartingTransform = GetMesh()->GetRelativeTransform();
-
-	// set the life bar color
-	LifeBarWidget->SetBarColor(LifeBarColor);
-
-	// reset HP to maximum
-	ResetHP();
 }
 
 void ACombatCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -447,7 +375,7 @@ void ACombatCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	// clear the respawn timer
-	GetWorld()->GetTimerManager().ClearTimer(RespawnTimer);
+	// GetWorld()->GetTimerManager().ClearTimer(RespawnTimer);
 }
 
 void ACombatCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -457,13 +385,6 @@ void ACombatCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACombatCharacter::Move);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACombatCharacter::Look);
-		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ACombatCharacter::Look);
-
 		// Combo Attack
 		EnhancedInputComponent->BindAction(ComboAttackAction, ETriggerEvent::Started, this, &ACombatCharacter::ComboAttackPressed);
 

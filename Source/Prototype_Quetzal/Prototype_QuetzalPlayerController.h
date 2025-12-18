@@ -35,10 +35,20 @@ protected:
 	/** Pointer to the mobile controls widget */
 	TObjectPtr<UUserWidget> MobileControlsWidget;
 
+	UPROPERTY(EditAnywhere, Category = "UI_HUD")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "UI_HUD")
+	TObjectPtr<UUserWidget> HUDWidget;
+
+	UFUNCTION()
+	void OnPawnHealthChanged(float HealthPercent);
+
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
 
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
 
+	void OnPossess(APawn* InPawn) override;
 };

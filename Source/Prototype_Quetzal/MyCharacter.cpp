@@ -75,6 +75,33 @@ void AMyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	GetWorld()->GetTimerManager().ClearTimer(RespawnTimer);
 }
 
+float AMyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// only process damage if the character is still alive
+	if (CurrentHP <= 0.0f)
+	{
+		return 0.0f;
+	}
+
+	// reduce the current HP
+	CurrentHP -= Damage;
+	OnHealthChanged.Broadcast(CurrentHP / MaxHP);
+
+	// have we run out of HP?
+	if (CurrentHP <= 0.0f)
+	{
+		// die
+		HandleDeath();
+	}
+	else
+	{
+		// apply camera shake
+	}
+
+	// return the received damage amount
+	return Damage;
+}
+
 void AMyCharacter::ResetHP()
 {
 	// reset the current HP total

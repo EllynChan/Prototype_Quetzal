@@ -7,11 +7,22 @@
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "Prototype_Quetzal.h"
+#include "MyCharacter.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void APrototype_QuetzalPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HUDWidget = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+	if (HUDWidget)
+	{
+		HUDWidget->AddToPlayerScreen(0);
+	}
+	else
+	{
+		UE_LOG(LogPrototype_Quetzal, Error, TEXT("Could not spawn HUD widget."));
+	}
 
 	// only spawn touch controls on local player controllers
 	if (SVirtualJoystick::ShouldDisplayTouchInterface() && IsLocalPlayerController())
@@ -57,5 +68,27 @@ void APrototype_QuetzalPlayerController::SetupInputComponent()
 				}
 			}
 		}
+	}
+}
+
+void APrototype_QuetzalPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (AMyCharacter* MyChar = Cast<AMyCharacter>(InPawn))
+	{
+		MyChar->OnHealthChanged.AddUObject(
+			this,
+			&APrototype_QuetzalPlayerController::OnPawnHealthChanged
+		);
+	}
+}
+
+void APrototype_QuetzalPlayerController::OnPawnHealthChanged(float HealthPercent)
+{
+	if (HUDWidget)
+	{
+		// need to make the hud class first
+		//HUDWidget->SetHealthPercent(HealthPercent);
 	}
 }

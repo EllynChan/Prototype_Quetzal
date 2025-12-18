@@ -51,6 +51,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Respawn", meta = (ClampMin = 0, ClampMax = 10, Units = "s"))
 	float RespawnTime = 3.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float BaseAttack = 25.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float BaseDefense = 10.0f;
+
 	/** Character respawn timer */
 	FTimerHandle RespawnTimer;
 
@@ -73,6 +79,9 @@ public:
 
 	/** Called from the respawn timer to destroy and re-create the character */
 	void RespawnCharacter();
+
+	/** Overrides the default TakeDamage functionality */
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 
@@ -106,6 +115,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	bool IsMoving() const { return GetPendingMovementInputVector().IsNearlyZero(); }
+
+	UFUNCTION(BlueprintPure, Category = "Damage")
+	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
+
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float);
+	FOnHealthChanged OnHealthChanged;
+
+	UFUNCTION(BlueprintPure, Category = "Damage")
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

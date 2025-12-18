@@ -212,11 +212,6 @@ public:
 	/** Handles damage and knockback events */
 	virtual void ApplyDamage(float Damage, AActor* DamageCauser, const FVector& DamageLocation, const FVector& DamageImpulse) override;
 
-public:
-
-	/** Overrides the default TakeDamage functionality */
-	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
 protected:
 
 	/** Blueprint handler to play damage dealt effects */
@@ -248,10 +243,4 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	UFUNCTION(BlueprintPure, Category = "Custom")
-	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
-
-	UFUNCTION(BlueprintPure, Category = "Custom")
-	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 };

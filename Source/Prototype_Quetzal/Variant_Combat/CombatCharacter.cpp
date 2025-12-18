@@ -18,14 +18,13 @@
 
 ACombatCharacter::ACombatCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	// bind the attack montage ended delegate
 	OnAttackMontageEnded.BindUObject(this, &ACombatCharacter::AttackMontageEnded);
 
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(50.0f, 90.0f);
 
+	// have character rotate with camera
 	bUseControllerRotationYaw = true;
 
 	// create the camera boom
@@ -322,32 +321,6 @@ void ACombatCharacter::HandleDeath()
 void ACombatCharacter::ApplyHealing(float Healing, AActor* Healer)
 {
 	// stub
-}
-
-float ACombatCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	// only process damage if the character is still alive
-	if (CurrentHP <= 0.0f)
-	{
-		return 0.0f;
-	}
-
-	// reduce the current HP
-	CurrentHP -= Damage;
-
-	// have we run out of HP?
-	if (CurrentHP <= 0.0f)
-	{
-		// die
-		HandleDeath();
-	}
-	else
-	{
-		// apply camera shake
-	}
-
-	// return the received damage amount
-	return Damage;
 }
 
 //void ACombatCharacter::Landed(const FHitResult& Hit)

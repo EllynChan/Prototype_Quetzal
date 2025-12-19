@@ -9,6 +9,7 @@
 #include "Prototype_Quetzal.h"
 #include "MyCharacter.h"
 #include "MyHUDWidget.h"
+#include "Prototype_QuetzalCharacter.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void APrototype_QuetzalPlayerController::BeginPlay()
@@ -82,7 +83,16 @@ void APrototype_QuetzalPlayerController::OnPossess(APawn* InPawn)
 			this,
 			&APrototype_QuetzalPlayerController::OnPawnHealthChanged
 		);
+
+		// subscribe to the pawn's OnDestroyed delegate
+		InPawn->OnDestroyed.AddDynamic(this, &APrototype_QuetzalPlayerController::OnPawnDestroyed);
 	}
+}
+
+void APrototype_QuetzalPlayerController::SetRespawnTransform(const FTransform& NewRespawn)
+{
+	// save the new respawn transform
+	RespawnTransform = NewRespawn;
 }
 
 void APrototype_QuetzalPlayerController::OnPawnHealthChanged(float HealthPercent)
@@ -90,5 +100,15 @@ void APrototype_QuetzalPlayerController::OnPawnHealthChanged(float HealthPercent
 	if (HUDWidget)
 	{
 		HUDWidget->SetHealthPercent(HealthPercent);
+	}
+}
+
+void APrototype_QuetzalPlayerController::OnPawnDestroyed(AActor* DestroyedActor)
+{
+	// spawn a new character at the respawn transform
+	if (APrototype_QuetzalCharacter* RespawnedCharacter = GetWorld()->SpawnActor<APrototype_QuetzalCharacter>(CharacterClass, RespawnTransform))
+	{
+		// possess the character
+		Possess(RespawnedCharacter);
 	}
 }

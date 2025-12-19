@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "MyHUDWidget.h"
+#include "Prototype_QuetzalCharacter.h"
 #include "Prototype_QuetzalPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -42,8 +43,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI_HUD")
 	TObjectPtr<UMyHUDWidget> HUDWidget;
 
+	/** Character class to respawn when the possessed pawn is destroyed */
+	UPROPERTY(EditAnywhere, Category = "Respawn")
+	TSubclassOf<APrototype_QuetzalCharacter> CharacterClass;
+
+	/** Transform to respawn the character at. Can be set to create checkpoints */
+	FTransform RespawnTransform;
+
 	UFUNCTION()
 	void OnPawnHealthChanged(float HealthPercent);
+
+	void OnPossess(APawn* InPawn) override;
 
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
@@ -51,5 +61,11 @@ protected:
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
 
-	void OnPossess(APawn* InPawn) override;
+	/** Called if the possessed pawn is destroyed */
+	UFUNCTION()
+	void OnPawnDestroyed(AActor* DestroyedActor);
+
+public:
+	/** Updates the character respawn transform */
+	void SetRespawnTransform(const FTransform& NewRespawn);
 };

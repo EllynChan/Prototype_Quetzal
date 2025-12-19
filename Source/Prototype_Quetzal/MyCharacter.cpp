@@ -106,6 +106,7 @@ void AMyCharacter::ResetHP()
 {
 	// reset the current HP total
 	CurrentHP = MaxHP;
+	OnHealthChanged.Broadcast(CurrentHP / MaxHP);
 }
 
 void AMyCharacter::RespawnCharacter()

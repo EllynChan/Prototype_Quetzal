@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Prototype_Quetzal.h"
+#include "Prototype_QuetzalPlayerController.h"
 
 APrototype_QuetzalCharacter::APrototype_QuetzalCharacter()
 {
@@ -30,4 +31,15 @@ APrototype_QuetzalCharacter::APrototype_QuetzalCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void APrototype_QuetzalCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	// update the respawn transform on the Player Controller
+	if (APrototype_QuetzalPlayerController* PC = Cast<APrototype_QuetzalPlayerController>(GetController()))
+	{
+		PC->SetRespawnTransform(GetActorTransform());
+	}
 }

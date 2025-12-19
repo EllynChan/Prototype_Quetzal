@@ -31,6 +31,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	/** Handles possessed initialization */
+	virtual void NotifyControllerChanged() override;
+
 public:
 
 	/** Constructor */

@@ -8,13 +8,14 @@
 #include "Blueprint/UserWidget.h"
 #include "Prototype_Quetzal.h"
 #include "MyCharacter.h"
+#include "MyHUDWidget.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void APrototype_QuetzalPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HUDWidget = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+	HUDWidget = CreateWidget<UMyHUDWidget>(this, HUDWidgetClass);
 	if (HUDWidget)
 	{
 		HUDWidget->AddToPlayerScreen(0);
@@ -88,7 +89,6 @@ void APrototype_QuetzalPlayerController::OnPawnHealthChanged(float HealthPercent
 {
 	if (HUDWidget)
 	{
-		// need to make the hud class first
-		//HUDWidget->SetHealthPercent(HealthPercent);
+		HUDWidget->SetHealthPercent(HealthPercent);
 	}
 }

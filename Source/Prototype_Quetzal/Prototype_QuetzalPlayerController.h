@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "MyHUDWidget.h"
 #include "Prototype_QuetzalPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -36,10 +37,10 @@ protected:
 	TObjectPtr<UUserWidget> MobileControlsWidget;
 
 	UPROPERTY(EditAnywhere, Category = "UI_HUD")
-	TSubclassOf<UUserWidget> HUDWidgetClass;
+	TSubclassOf<UMyHUDWidget> HUDWidgetClass;
 
 	UPROPERTY(EditAnywhere, Category = "UI_HUD")
-	TObjectPtr<UUserWidget> HUDWidget;
+	TObjectPtr<UMyHUDWidget> HUDWidget;
 
 	UFUNCTION()
 	void OnPawnHealthChanged(float HealthPercent);

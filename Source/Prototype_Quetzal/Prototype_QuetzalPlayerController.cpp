@@ -16,16 +16,6 @@ void APrototype_QuetzalPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HUDWidget = CreateWidget<UMyHUDWidget>(this, HUDWidgetClass);
-	if (HUDWidget)
-	{
-		HUDWidget->AddToPlayerScreen(0);
-	}
-	else
-	{
-		UE_LOG(LogPrototype_Quetzal, Error, TEXT("Could not spawn HUD widget."));
-	}
-
 	// only spawn touch controls on local player controllers
 	if (SVirtualJoystick::ShouldDisplayTouchInterface() && IsLocalPlayerController())
 	{
@@ -77,30 +67,8 @@ void APrototype_QuetzalPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (AMyCharacter* MyChar = Cast<AMyCharacter>(InPawn))
-	{
-		MyChar->OnHealthChanged.AddUObject(
-			this,
-			&APrototype_QuetzalPlayerController::OnPawnHealthChanged
-		);
-
-		// subscribe to the pawn's OnDestroyed delegate
-		InPawn->OnDestroyed.AddDynamic(this, &APrototype_QuetzalPlayerController::OnPawnDestroyed);
-	}
-}
-
-void APrototype_QuetzalPlayerController::SetRespawnTransform(const FTransform& NewRespawn)
-{
-	// save the new respawn transform
-	RespawnTransform = NewRespawn;
-}
-
-void APrototype_QuetzalPlayerController::OnPawnHealthChanged(float HealthPercent)
-{
-	if (HUDWidget)
-	{
-		HUDWidget->SetHealthPercent(HealthPercent);
-	}
+	BindToCharacter(Cast<AMyCharacter>(InPawn));
+	InPawn->OnDestroyed.AddDynamic(this, &APrototype_QuetzalPlayerController::OnPawnDestroyed);
 }
 
 void APrototype_QuetzalPlayerController::OnPawnDestroyed(AActor* DestroyedActor)
@@ -110,5 +78,6 @@ void APrototype_QuetzalPlayerController::OnPawnDestroyed(AActor* DestroyedActor)
 	{
 		// possess the character
 		Possess(RespawnedCharacter);
+		RespawnedCharacter->OnHealthChanged.Broadcast(RespawnedCharacter->CurrentHP / RespawnedCharacter->MaxHP);
 	}
 }

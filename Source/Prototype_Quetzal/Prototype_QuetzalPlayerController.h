@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "MyHUDWidget.h"
+#include "MyPlayerController.h"
 #include "Prototype_QuetzalCharacter.h"
 #include "Prototype_QuetzalPlayerController.generated.h"
 
@@ -16,7 +17,7 @@ class UUserWidget;
  *  Manages input mappings
  */
 UCLASS(abstract)
-class APrototype_QuetzalPlayerController : public APlayerController
+class APrototype_QuetzalPlayerController : public AMyPlayerController
 {
 	GENERATED_BODY()
 	
@@ -37,21 +38,8 @@ protected:
 	/** Pointer to the mobile controls widget */
 	TObjectPtr<UUserWidget> MobileControlsWidget;
 
-	UPROPERTY(EditAnywhere, Category = "UI_HUD")
-	TSubclassOf<UMyHUDWidget> HUDWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category = "UI_HUD")
-	TObjectPtr<UMyHUDWidget> HUDWidget;
-
-	/** Character class to respawn when the possessed pawn is destroyed */
-	UPROPERTY(EditAnywhere, Category = "Respawn")
-	TSubclassOf<APrototype_QuetzalCharacter> CharacterClass;
-
-	/** Transform to respawn the character at. Can be set to create checkpoints */
-	FTransform RespawnTransform;
-
 	UFUNCTION()
-	void OnPawnHealthChanged(float HealthPercent);
+	/*void OnPawnHealthChanged(float HealthPercent);*/
 
 	void OnPossess(APawn* InPawn) override;
 
@@ -65,7 +53,7 @@ protected:
 	UFUNCTION()
 	void OnPawnDestroyed(AActor* DestroyedActor);
 
-public:
-	/** Updates the character respawn transform */
-	void SetRespawnTransform(const FTransform& NewRespawn);
+	/** Character class to respawn when the possessed pawn is destroyed */
+	UPROPERTY(EditAnywhere, Category = "Respawn")
+	TSubclassOf<APrototype_QuetzalCharacter> CharacterClass;
 };

@@ -34,6 +34,8 @@ protected:
 	/** Handles possessed initialization */
 	virtual void NotifyControllerChanged() override;
 
+	virtual void HandleDeath() override;
+
 public:
 
 	/** Constructor */

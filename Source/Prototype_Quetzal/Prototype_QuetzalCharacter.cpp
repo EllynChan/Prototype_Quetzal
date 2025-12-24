@@ -43,3 +43,10 @@ void APrototype_QuetzalCharacter::NotifyControllerChanged()
 		PC->SetRespawnTransform(GetActorTransform());
 	}
 }
+
+void APrototype_QuetzalCharacter::HandleDeath()
+{
+	Super::HandleDeath();
+
+	// do something about gravity and death animation here
+}

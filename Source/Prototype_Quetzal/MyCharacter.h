@@ -39,14 +39,6 @@ protected:
 
 	FVector2D CurrMoveInput;
 
-	/** Max amount of HP the character will have on respawn */
-	UPROPERTY(EditAnywhere, Category = "Damage", meta = (ClampMin = 0, ClampMax = 100))
-	float MaxHP = 100.0f;
-
-	/** Current amount of HP the character has */
-	UPROPERTY(VisibleAnywhere, Category = "Damage")
-	float CurrentHP = 0.0f;
-
 	/** Time to wait before respawning the character */
 	UPROPERTY(EditAnywhere, Category = "Respawn", meta = (ClampMin = 0, ClampMax = 10, Units = "s"))
 	float RespawnTime = 3.0f;
@@ -56,6 +48,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Damage")
 	float BaseDefense = 10.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UParticleSystem* HitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	TSubclassOf<UCameraShakeBase> HitCameraShake;
 
 	/** Character respawn timer */
 	FTimerHandle RespawnTimer;
@@ -88,15 +86,28 @@ protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
-
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+protected:
+
+	void SpawnHitEffect();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	FVector HitEmitterOffset = FVector::ZeroVector;
+
 public:	
+	/** Max amount of HP the character will have on respawn */
+	UPROPERTY(EditAnywhere, Category = "Damage", meta = (ClampMin = 0, ClampMax = 100))
+	float MaxHP = 100.0f;
+
+	/** Current amount of HP the character has */
+	UPROPERTY(VisibleAnywhere, Category = "Damage")
+	float CurrentHP = 0.0f;
+
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMove(float Right, float Forward);
@@ -121,6 +132,12 @@ public:
 
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float);
 	FOnHealthChanged OnHealthChanged;
+
+	DECLARE_MULTICAST_DELEGATE(FOnDeath);
+	FOnDeath OnDeath;
+
+	DECLARE_MULTICAST_DELEGATE(FOnRespawn);
+	FOnRespawn OnRespawn;
 
 	UFUNCTION(BlueprintPure, Category = "Damage")
 	FORCEINLINE float GetMaxHP() const { return MaxHP; }

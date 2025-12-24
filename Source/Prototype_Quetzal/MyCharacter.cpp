@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
 #include "Prototype_Quetzal.h"
 
 
@@ -87,6 +88,8 @@ float AMyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEv
 	CurrentHP -= Damage;
 	OnHealthChanged.Broadcast(CurrentHP / MaxHP);
 
+	SpawnHitEffect();
+
 	// have we run out of HP?
 	if (CurrentHP <= 0.0f)
 	{
@@ -106,13 +109,13 @@ void AMyCharacter::ResetHP()
 {
 	// reset the current HP total
 	CurrentHP = MaxHP;
-	OnHealthChanged.Broadcast(CurrentHP / MaxHP);
 }
 
 void AMyCharacter::RespawnCharacter()
 {
 	// destroy the character and let it be respawned by the Player Controller
 	Destroy();
+	OnRespawn.Broadcast();
 }
 
 void AMyCharacter::HandleDeath()
@@ -122,6 +125,8 @@ void AMyCharacter::HandleDeath()
 
 	// schedule respawning
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AMyCharacter::RespawnCharacter, RespawnTime, false);
+
+	OnDeath.Broadcast();
 }
 
 void AMyCharacter::ApplyHealing(float Healing, AActor* Healer)
@@ -130,6 +135,30 @@ void AMyCharacter::ApplyHealing(float Healing, AActor* Healer)
 	CurrentHP += Healing;
 	// clamp to maximum HP
 	CurrentHP = FMath::Clamp(CurrentHP, 0.0f, MaxHP);
+}
+
+void AMyCharacter::SpawnHitEffect()
+{
+	if (!HitEmitter)
+		return;
+
+	const FVector SpawnLocation = GetActorLocation() + HitEmitterOffset;
+
+	UGameplayStatics::SpawnEmitterAtLocation(
+		GetWorld(),
+		HitEmitter,
+		SpawnLocation,
+		GetActorRotation()
+	);
+
+	// Camera shake (local player only)
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (HitCameraShake)
+		{
+			PC->ClientStartCameraShake(HitCameraShake);
+		}
+	}
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)

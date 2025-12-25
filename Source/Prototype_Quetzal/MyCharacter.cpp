@@ -120,11 +120,14 @@ void AMyCharacter::RespawnCharacter()
 
 void AMyCharacter::HandleDeath()
 {
+	
 	// disable movement while we're dead
 	GetCharacterMovement()->DisableMovement();
 
 	// schedule respawning
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AMyCharacter::RespawnCharacter, RespawnTime, false);
+
+	CharacterState = ECharacterState::Dead;
 
 	OnDeath.Broadcast();
 }

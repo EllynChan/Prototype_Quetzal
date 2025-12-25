@@ -48,5 +48,8 @@ void APrototype_QuetzalCharacter::HandleDeath()
 {
 	Super::HandleDeath();
 
-	// do something about gravity and death animation here
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+
+	MoveComp->SetMovementMode(MOVE_Falling);
+	MoveComp->GravityScale = 1.0f;
 }

@@ -41,6 +41,8 @@ void AMyPlayerController::OnPawnHealthChanged(float HealthPercent)
 
 void AMyPlayerController::ShowDeathScreen()
 {
+	FlushPressedKeys();
+
 	if (DeathScreenWidget)
 	{
 		DeathScreenWidget->AddToViewport();

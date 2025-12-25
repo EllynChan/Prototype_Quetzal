@@ -79,5 +79,6 @@ void APrototype_QuetzalPlayerController::OnPawnDestroyed(AActor* DestroyedActor)
 		// possess the character
 		Possess(RespawnedCharacter);
 		RespawnedCharacter->OnHealthChanged.Broadcast(RespawnedCharacter->CurrentHP / RespawnedCharacter->MaxHP);
+		RespawnedCharacter->CharacterState = ECharacterState::Default;
 	}
 }

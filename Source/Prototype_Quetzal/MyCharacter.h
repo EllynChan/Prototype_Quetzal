@@ -9,6 +9,15 @@
 class UInputAction;
 struct FInputActionValue;
 
+UENUM(BlueprintType)
+enum class ECharacterState : uint8
+{
+	Default,
+	Acting,
+	Disabled,
+	Dead
+};
+
 UCLASS(Abstract)
 class PROTOTYPE_QUETZAL_API AMyCharacter : public ACharacter
 {
@@ -80,6 +89,9 @@ public:
 
 	/** Overrides the default TakeDamage functionality */
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	ECharacterState CharacterState = ECharacterState::Default;
 
 protected:
 

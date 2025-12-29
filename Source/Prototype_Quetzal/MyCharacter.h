@@ -18,6 +18,19 @@ enum class ECharacterState : uint8
 	Dead
 };
 
+enum class EStatusEffect : uint8
+{
+	Invincible,
+	Stunned,
+	Airborne
+};
+
+enum class EBasicSkill : uint8
+{
+	Dash,
+	BasicAttack
+};
+
 UCLASS(Abstract)
 class PROTOTYPE_QUETZAL_API AMyCharacter : public ACharacter
 {
@@ -46,6 +59,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MouseLookAction;
 
+	/** Dash Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DashAction;
+
+	/** Dash Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* AttackAction;
+
 	FVector2D CurrMoveInput;
 
 	/** Time to wait before respawning the character */
@@ -64,8 +85,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
 
+	// Stats effects
+	TSet<EBasicSkill> SkillsOnCD;
+
+	TMap<EBasicSkill, FTimerHandle> CDTimers;
+
 	/** Character respawn timer */
 	FTimerHandle RespawnTimer;
+
+	/** Character dashing timer */
+	FTimerHandle DashTimerHandle;
 
 	/** Copy of the mesh's transform so we can reset it after ragdoll animations */
 	FTransform MeshStartingTransform;
@@ -104,6 +133,22 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for dashing input. effects can be overriden in children */
+	virtual void StartDash();
+
+	virtual void EndDash();
+
+	// check if character can perform input actions
+	bool CanAct();
+
+	// check if character can take damage
+	bool CanTakeDamage();
+
+	// queue and remove basic skill internal cds
+	void BeginCD(EBasicSkill skill, float duration);
+
+	void EndCD(EBasicSkill skill);
+
 protected:
 
 	void SpawnHitEffect();
@@ -119,6 +164,17 @@ public:
 	/** Current amount of HP the character has */
 	UPROPERTY(VisibleAnywhere, Category = "Damage")
 	float CurrentHP = 0.0f;
+
+	/** Dashing distance */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	float DashDistance = 400.0f;
+
+	/** Dashing distance */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	float DashDuration = 0.2f;
+
+	// Stats effects
+	TSet<EStatusEffect> ActiveStatusEffects;
 
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")
@@ -139,8 +195,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	bool IsMoving() const { return GetPendingMovementInputVector().IsNearlyZero(); }
 
+	bool IsInvincible() const { return ActiveStatusEffects.Contains(EStatusEffect::Invincible); }
+
 	UFUNCTION(BlueprintPure, Category = "Damage")
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
+
+	UFUNCTION(BlueprintPure, Category = "Damage")
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float);
 	FOnHealthChanged OnHealthChanged;
@@ -150,9 +211,6 @@ public:
 
 	DECLARE_MULTICAST_DELEGATE(FOnRespawn);
 	FOnRespawn OnRespawn;
-
-	UFUNCTION(BlueprintPure, Category = "Damage")
-	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

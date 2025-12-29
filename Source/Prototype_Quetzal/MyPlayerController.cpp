@@ -42,24 +42,22 @@ void AMyPlayerController::OnPawnHealthChanged(float HealthPercent)
 void AMyPlayerController::ShowDeathScreen()
 {
 	FlushPressedKeys();
-
 	if (DeathScreenWidget)
 	{
-		DeathScreenWidget->AddToViewport();
-
-		SetInputMode(FInputModeUIOnly());
+		DeathScreenWidget->AddToViewport(0);
+		DeathScreenWidget->SetVisibility(ESlateVisibility::Visible);
 	}
+	
+	SetInputMode(FInputModeUIOnly());
 }
 
 void AMyPlayerController::HideDeathScreen()
 {
 	if (DeathScreenWidget)
 	{
-		DeathScreenWidget->RemoveFromParent();
-		DeathScreenWidget = nullptr;
-
-		SetInputMode(FInputModeGameOnly());
+		DeathScreenWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	SetInputMode(FInputModeGameOnly());
 }
 
 void AMyPlayerController::BindToCharacter(AMyCharacter* InCharacter)

@@ -50,6 +50,9 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyCharacter::Look);
+
+		// Dash
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AMyCharacter::StartDash);
 	}
 	else
 	{
@@ -78,8 +81,8 @@ void AMyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 float AMyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	// only process damage if the character is still alive
-	if (CurrentHP <= 0.0f)
+	// only process damage if the character is still alive, and able to take damage
+	if (CurrentHP <= 0.0f || !CanTakeDamage())
 	{
 		return 0.0f;
 	}
@@ -164,8 +167,21 @@ void AMyCharacter::SpawnHitEffect()
 	}
 }
 
+bool AMyCharacter::CanAct()
+{
+	return (CharacterState == ECharacterState::Default && !ActiveStatusEffects.Contains(EStatusEffect::Stunned) 
+		&& !ActiveStatusEffects.Contains(EStatusEffect::Airborne));
+}
+
+bool AMyCharacter::CanTakeDamage()
+{
+	return (!ActiveStatusEffects.Contains(EStatusEffect::Invincible));
+}
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
+	if (!CanAct()) { return; }
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -214,6 +230,8 @@ void AMyCharacter::DoLook(float Yaw, float Pitch)
 
 void AMyCharacter::DoJumpStart()
 {
+	if (!CanAct()) { return; }
+
 	// signal the character to jump
 	Jump();
 }
@@ -222,6 +240,62 @@ void AMyCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AMyCharacter::StartDash()
+{
+	if (!CanAct() || SkillsOnCD.Contains(EBasicSkill::Dash)) return;
+
+	// Add invincibility to stack
+	ActiveStatusEffects.Add(EStatusEffect::Invincible);
+
+	// Set acting state
+	CharacterState = ECharacterState::Acting;
+
+	// Start CD
+	BeginCD(EBasicSkill::Dash, 1.0f);
+
+	// Schedule EndDash
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AMyCharacter::EndDash, DashDuration, false);
+}
+
+void AMyCharacter::EndDash()
+{
+	// Move actor forward using sweep
+	FVector TargetLocation = GetActorLocation() + GetActorForwardVector() * DashDistance;
+	SetActorLocation(TargetLocation, true);
+
+	// Remove invincibility
+	ActiveStatusEffects.Remove(EStatusEffect::Invincible);
+
+	// Reset state
+	CharacterState = ECharacterState::Default;
+}
+
+void AMyCharacter::BeginCD(EBasicSkill skill, float duration)
+{
+	if (SkillsOnCD.Contains(skill))
+		return;
+
+	SkillsOnCD.Add(skill);
+
+	FTimerHandle& Handle = CDTimers.FindOrAdd(skill);
+
+	GetWorldTimerManager().SetTimer(
+		Handle,
+		FTimerDelegate::CreateUObject(
+			this,
+			&AMyCharacter::EndCD,
+			skill
+		),
+		duration,
+		false
+	);
+}
+
+void AMyCharacter::EndCD(EBasicSkill skill)
+{
+	SkillsOnCD.Remove(skill);
 }
 
 // Called every frame

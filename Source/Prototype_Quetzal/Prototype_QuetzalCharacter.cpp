@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 #include "InputActionValue.h"
 #include "Prototype_Quetzal.h"
 #include "Prototype_QuetzalPlayerController.h"
@@ -52,4 +53,32 @@ void APrototype_QuetzalCharacter::HandleDeath()
 
 	MoveComp->SetMovementMode(MOVE_Falling);
 	MoveComp->GravityScale = 1.0f;
+}
+
+void APrototype_QuetzalCharacter::StartDash()
+{
+	if (!CanAct() || SkillsOnCD.Contains(EBasicSkill::Dash)) return;
+
+	Super::StartDash();
+
+	// Save velocity
+	SavedVelocity = GetVelocity();
+
+	// Hide mesh
+	GetMesh()->SetVisibility(false);
+}
+
+void APrototype_QuetzalCharacter::EndDash()
+{
+	Super::EndDash();
+
+	// Restore velocity
+	LaunchCharacter(SavedVelocity, true, true);
+
+	// Spawn effect
+	if (DashEffect)
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DashEffect, GetActorLocation());
+
+	// Show mesh
+	GetMesh()->SetVisibility(true);
 }

@@ -31,10 +31,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UParticleSystem* DashEffect;
+
+	FVector SavedVelocity;
+
 	/** Handles possessed initialization */
 	virtual void NotifyControllerChanged() override;
 
 	virtual void HandleDeath() override;
+
+	void StartDash() override;
+
+	void EndDash() override;
 
 public:
 
